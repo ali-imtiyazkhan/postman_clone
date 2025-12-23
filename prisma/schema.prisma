@@ -7,20 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 
-  sessions      Session[]
-  accounts      Account[]
-  workspaces    Workspace[]       @relation("UserWorkspaces")
-  memberships   WorkspaceMember[]
+  sessions    Session[]
+  accounts    Account[]
+  workspaces  Workspace[]       @relation("UserWorkspaces")
+  memberships WorkspaceMember[]
 
   workspaceInvites WorkspaceInvite[]
 }
@@ -34,16 +33,16 @@ model Session {
   ipAddress String?
   userAgent String?
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String @id
+  accountId  String
+  providerId String
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   accessToken           String?
   refreshToken          String?
@@ -53,8 +52,8 @@ model Account {
   scope                 String?
   password              String?
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Verification {
@@ -66,55 +65,51 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 }
 
-
 model Workspace {
-  id          String      @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  ownerId     String      
-  owner       User        @relation("UserWorkspaces", fields: [ownerId], references: [id])
+  ownerId     String
+  owner       User    @relation("UserWorkspaces", fields: [ownerId], references: [id])
 
-  collections Collection[]
-  members     WorkspaceMember[]
-  invites     WorkspaceInvite[]
+  collections  Collection[]
+  members      WorkspaceMember[]
+  invites      WorkspaceInvite[]
   environments Environment[]
 
   websocketPresets WebSocketPreset[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
 
   @@unique([name, ownerId])
 }
 
 model WorkspaceInvite {
-   id          String     @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
-  token       String     @unique
+  token       String    @unique
   expiresAt   DateTime?
   createdById String
-  
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy   User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
 
-
-
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
 }
 
 model WebSocketPreset {
-  id         String   @id @default(cuid())
-  name       String
-  url        String
-  protocols  Json?    
-  params     Json?    
-  workspaceId String? 
+  id          String  @id @default(cuid())
+  name        String
+  url         String
+  protocols   Json?
+  params      Json?
+  workspaceId String?
 
-  workspace  Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
 
   websocketMessages WebsocketMessage[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 enum DIRECTION {
@@ -123,16 +118,16 @@ enum DIRECTION {
 }
 
 model WebsocketMessage {
-  id          String   @id @default(cuid())
-  presetId    String? 
-  connectionId String? 
-  direction   DIRECTION @default(INCOMING)
-  payload     String?  
-  size        Int?
-  timestamp   DateTime @default(now())
+  id           String    @id @default(cuid())
+  presetId     String?
+  connectionId String?
+  direction    DIRECTION @default(INCOMING)
+  payload      String?
+  size         Int?
+  timestamp    DateTime  @default(now())
 
-  preset      WebSocketPreset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
-  meta        Json?
+  preset WebSocketPreset? @relation(fields: [presetId], references: [id], onDelete: SetNull)
+  meta   Json?
 }
 
 enum MEMBER_ROLE {
@@ -142,18 +137,17 @@ enum MEMBER_ROLE {
 }
 
 model WorkspaceMember {
-  id          String    @id @default(cuid())
-  role        MEMBER_ROLE @default(ADMIN)
+  id   String      @id @default(cuid())
+  role MEMBER_ROLE @default(ADMIN)
 
   userId      String
   workspaceId String
 
-  user        User       @relation(fields: [userId], references: [id])
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
 
-
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([userId, workspaceId])
 }
@@ -163,18 +157,15 @@ model WorkspaceMember {
 //
 
 model Collection {
-  id          String     @id @default(cuid())
-  name        String
+  id   String @id @default(cuid())
+  name String
 
   workspaceId String
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   requests    Request[]
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
-
-
-    
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum REST_METHOD {
@@ -186,37 +177,37 @@ enum REST_METHOD {
 }
 
 model Request {
-  id          String      @id @default(cuid())
-  name        String
-  method      REST_METHOD @default(GET)
-  url         String
-  parameters  Json?
-  headers     Json?       // e.g. 
-  
-  body        Json?       // request body (JSON / text)
-  response    Json?       // optional: save last response
+  id         String      @id @default(cuid())
+  name       String
+  method     REST_METHOD @default(GET)
+  url        String
+  parameters Json?
+  headers    Json? // e.g. 
+
+  body     Json? // request body (JSON / text)
+  response Json? // optional: save last response
 
   collectionId String
-  collection   Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   runs         RequestRun[]
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model RequestRun {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  requestId  String
-  request    Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  requestId String
+  request   Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   status     Int
   statusText String?
   headers    Json?
-  body       String?   // raw text or JSON string
+  body       String? // raw text or JSON string
   durationMs Int?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 //
@@ -224,10 +215,10 @@ model RequestRun {
 //
 
 model Environment {
-  id          String     @id @default(cuid())
-  name        String
-  values      Json       // e.g. { "BASE_URL": "https://api.example.com", "AUTH": "Bearer xxx" }
+  id     String @id @default(cuid())
+  name   String
+  values Json // e.g. { "BASE_URL": "https://api.example.com", "AUTH": "Bearer xxx" }
 
   workspaceId String
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
