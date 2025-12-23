@@ -99,7 +99,7 @@ const TabbedSidebar = ({ currentWorkspace }: Props) => {
             onClick={() => setActiveTab(item.label)}
             className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors ${
               activeTab === item.label
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-zinc-200 text-black'
                 : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
             }`}
           >

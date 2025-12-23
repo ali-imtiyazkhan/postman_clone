@@ -8,7 +8,7 @@ import React from "react";
 
 const TabbedLeftPanel = () => {
     const pathname = usePathname();
-    const activeTab = pathname.split("/")[1] || "rest"; // default to "rest" on home
+    const activeTab = pathname.split("/")[1] || "rest";
 
     const sidebarItems = [
         { icon: LinkIcon, label: "rest", link: "/" },
@@ -25,7 +25,7 @@ const TabbedLeftPanel = () => {
                             href={item.link}
                             key={index}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors ${activeTab === item.label
-                                    ? "bg-indigo-600 text-white"
+                                    ? "bg-white text-black"
                                     : "text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800"
                                 }`}
                         >
