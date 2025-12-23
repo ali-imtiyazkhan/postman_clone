@@ -181,7 +181,7 @@ const BodyEditor: React.FC<BodyEditorProps> = ({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-[180px] h-7 bg-zinc-700 border-zinc-600 text-xs">
+                          <SelectTrigger className="w-45 h-7 bg-zinc-700 border-zinc-600 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
@@ -309,7 +309,7 @@ const BodyEditor: React.FC<BodyEditorProps> = ({
 
       {/* Generate JSON Dialog */}
       <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-zinc-100 border-zinc-800">
+        <DialogContent className="sm:max-w-106.25 bg-zinc-900 text-zinc-100 border-zinc-800">
           <DialogHeader>
             <DialogTitle>Generate JSON Body</DialogTitle>
           </DialogHeader>
