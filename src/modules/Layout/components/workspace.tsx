@@ -50,9 +50,9 @@ const WorkSpace = () => {
                         if (ws) setSelectedWorkspace(ws);
                     }}
                 >
-                    <SelectTrigger className="border border-indigo-400 bg-indigo-400/10 hover:bg-indigo-400/20 text-indigo-400 hover:text-indigo-300 flex flex-row items-center space-x-1">
-                        <User className="size-4 text-indigo-400" />
-                        <span className="text-sm text-indigo-400 font-semibold">
+                    <SelectTrigger className="border border-zinc-200 bg-indigo-400/10 hover:bg-indigo-400/20 text-white hover:text-zinc-300 flex flex-row items-center space-x-1">
+                        <User className="size-4 text-zinc-200" />
+                        <span className="text-sm text-zinc-200 font-semibold">
                             <SelectValue placeholder="Select workspace" />
                         </span>
                     </SelectTrigger>
@@ -66,7 +66,7 @@ const WorkSpace = () => {
                         <div className="p-2 flex flex-row justify-between items-center">
                             <span className="text-sm font-semibold text-zinc-600">My Workspaces</span>
                             <Button size="icon" variant="outline" onClick={() => setIsModalOpen(true)}>
-                                <Plus size={16} className="text-indigo-400" />
+                                <Plus size={16} className="text-zinc-200" />
                             </Button>
                         </div>
                     </SelectContent>

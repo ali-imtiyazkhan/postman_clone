@@ -15,7 +15,7 @@ const EmptyCollections = () => {
                     Import or create a collection
                 </p>
                 <div className="space-y-3 w-full max-w-xs">
-                    <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2">
+                    <button className="w-full bg-zinc-300 hover:bg-zinc-500 text-black hover:text-black py-2.5 px-4 rounded-lg font-medium text-sm transition-colors flex items-center justify-center space-x-2">
                         <Upload className="w-4 h-4" />
                         <span>Import</span>
                     </button>
