@@ -16,7 +16,6 @@ import {
 const SearchBar = () => {
   const [open, setOpen] = useState(false)
 
-  // Handle keyboard shortcut
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -31,7 +30,7 @@ const SearchBar = () => {
 
   return (
     <>
-      {/* Search Button */}
+
       <button 
         onClick={() => setOpen(true)}
         className="relative flex flex-1 cursor-text items-center justify-between self-stretch rounded bg-zinc-900 px-4 py-2 text-gray-500 transition hover:bg-zinc-800 hover:text-gray-200 focus-visible:bg-zinc-700 focus-visible:text-gray-200 overflow-hidden"

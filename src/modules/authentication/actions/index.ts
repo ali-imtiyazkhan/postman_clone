@@ -7,7 +7,7 @@ import { headers } from "next/headers";
 export const currentUser = async () => {
   try {
     const session = await auth.api.getSession({
-      headers: await headers()
+      headers: await headers(),
     });
 
     if (!session?.user?.id) {
@@ -16,7 +16,7 @@ export const currentUser = async () => {
 
     const user = await db.user.findUnique({
       where: {
-        id: session.user.id
+        id: session.user.id,
       },
       select: {
         id: true,
@@ -25,7 +25,7 @@ export const currentUser = async () => {
         image: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
 
     return user;
@@ -34,6 +34,3 @@ export const currentUser = async () => {
     return null;
   }
 };
-
-
-

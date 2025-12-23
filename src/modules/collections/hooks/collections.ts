@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createCollection, deleteCollection, editCollection, getCollections } from "../actions";
+import {
+  createCollection,
+  deleteCollection,
+  editCollection,
+  getCollections,
+} from "../actions";
 
 export function useCollections(workspaceId: string) {
   return useQuery({
@@ -8,8 +13,7 @@ export function useCollections(workspaceId: string) {
   });
 }
 
-
-export function useCreateCollection(workspaceId: string , name: string) {
+export function useCreateCollection(workspaceId: string, name: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -20,18 +24,16 @@ export function useCreateCollection(workspaceId: string , name: string) {
   });
 }
 
-export function useDeleteCollection(collectionId:string){
+export function useDeleteCollection(collectionId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn:async () => deleteCollection(collectionId),
+    mutationFn: async () => deleteCollection(collectionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
-    }
-  })
+    },
+  });
 }
-
-
 
 export function useEditCollection(collectionId: string, name: string) {
   const queryClient = useQueryClient();
@@ -43,4 +45,3 @@ export function useEditCollection(collectionId: string, name: string) {
     },
   });
 }
-

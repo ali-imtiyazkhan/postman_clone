@@ -27,7 +27,6 @@ export const getCollections = async (workspaceId: string) => {
   return collections;
 };
 
-
 export const deleteCollection = async (collectionId: string) => {
   await db.collection.delete({
     where: {

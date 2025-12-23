@@ -1,26 +1,26 @@
-"use server"
+"use server";
 
-import db from "@/lib/db"
-import { env } from "@/lib/env"
-import { currentUser } from "@/modules/authentication/actions"
-import { MEMBER_ROLE } from "@prisma/client"
-import { randomBytes } from "crypto"
+import db from "@/lib/db";
+import { env } from "@/lib/env";
+import { currentUser } from "@/modules/authentication/actions";
+import { MEMBER_ROLE } from "@prisma/client";
+import { randomBytes } from "crypto";
 
 export const generateWorkspaceInvite = async (workspaceId: string) => {
-  const token = randomBytes(16).toString("hex")
-const user = await currentUser()
-if(!user) throw new Error("Unauthorized")
+  const token = randomBytes(16).toString("hex");
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized");
   const invite = await db.workspaceInvite.create({
     data: {
       workspaceId,
       token,
       createdById: user.id,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), 
-    }
-  })
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    },
+  });
 
-  return `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invite.token}`
-}
+  return `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invite.token}`;
+};
 
 export const acceptWorkspaceInvite = async (token: string) => {
   const user = await currentUser();
@@ -32,7 +32,8 @@ export const acceptWorkspaceInvite = async (token: string) => {
 
   if (!invite) throw new Error("Invalid invite");
 
-  if (!invite.expiresAt || invite.expiresAt < new Date()) throw new Error("Invite expired");
+  if (!invite.expiresAt || invite.expiresAt < new Date())
+    throw new Error("Invite expired");
 
   await db.workspaceMember.create({
     data: {
@@ -46,7 +47,6 @@ export const acceptWorkspaceInvite = async (token: string) => {
     where: { id: invite.id },
   });
 
-  
   return { success: true };
 };
 

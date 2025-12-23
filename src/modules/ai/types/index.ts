@@ -1,8 +1,7 @@
-
 // -------------------------Request Name Suggestion-------------------------
 export interface RequestSuggestionParams {
   workspaceName: string;
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   url?: string;
   description?: string;
 }
