@@ -10,8 +10,9 @@ import { UserProps, WorkspaceProps } from '../types'
 
 
 interface Props {
-    user: UserProps
+    user: UserProps 
     workspace: WorkspaceProps
+
 }
 
 const Header = ({ user, workspace }: Props) => {

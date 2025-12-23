@@ -44,7 +44,7 @@ const CreateCollection = ({
         >
             <div className="space-y-4">
                 <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 bg-zinc-300 text-black border rounded"
                     placeholder="Collection name..."
                     value={name}
                     onChange={(e) => setName(e.target.value)}

@@ -338,7 +338,7 @@ const BodyEditor: React.FC<BodyEditorProps> = ({
               type="submit"
               onClick={() => onGenerateBody(prompt)}
               disabled={!prompt.trim() || isPending}
-              className="bg-indigo-500 hover:bg-indigo-600"
+              className="bg-zinc-200 hover:bg-zinc-400"
             >
               {isPending ? 'Generating...' : 'Generate'}
             </Button>
