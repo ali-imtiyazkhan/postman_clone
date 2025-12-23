@@ -9,7 +9,7 @@ const AuthLayout = async({children}: {children: React.ReactNode}) => {
     })
 
     if(session){
-        return redirect("/")
+        return redirect("/sign-in")
     }
 
   return (
