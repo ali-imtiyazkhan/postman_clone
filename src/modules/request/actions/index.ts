@@ -77,7 +77,7 @@ export async function sendRequest(req: {
     headers: req.headers,
     params: req.params,
     data: req.body,
-    validateStatus: () => true, // ✅ capture errors too
+    validateStatus: () => true, 
   };
 
   const start = performance.now();

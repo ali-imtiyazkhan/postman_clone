@@ -10,7 +10,7 @@ import { UserProps, WorkspaceProps } from '../types'
 
 
 interface Props {
-    user: UserProps 
+    user: UserProps
     workspace: WorkspaceProps
 
 }
@@ -31,7 +31,8 @@ const Header = ({ user, workspace }: Props) => {
 
             <div className='col-span-2 flex items-center justify-end space-x-2 hover:cursor-pointer hover:opacity-80'>
                 <InviteMember />
-                {/* @ts-ignore */}
+
+                {/*@ts-expect-error -- explain why this is safe */}
                 <WorkSpace workspace={workspace} />
                 <UserButton user={user} size='sm' />
             </div>

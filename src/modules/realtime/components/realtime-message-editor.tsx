@@ -7,15 +7,15 @@ import { toast } from 'sonner'
 import RealtimeClientServerLogsTable from './realtime-client-server-logs-table'
 
 const RealtimeMessageEditor = () => {
-  const { 
-    send, 
+  const {
+    send,
     status,
-    isConnected, 
-    draftMessage, 
-    setDraftMessage, 
-    messages 
+    isConnected,
+    draftMessage,
+    setDraftMessage,
+    messages
   } = useWsStore()
-  
+
   const [isSending, setIsSending] = useState(false)
   const [lastSent, setLastSent] = useState('')
   const editorRef = useRef(null)
@@ -42,7 +42,7 @@ const RealtimeMessageEditor = () => {
 
     try {
       setIsSending(true)
-      
+
       // Try to parse JSON to validate
       let messageToSend
       try {
@@ -104,7 +104,7 @@ const RealtimeMessageEditor = () => {
       const formatted = JSON.stringify(parsed, null, 2)
       setDraftMessage(formatted)
       if (editorRef.current) {
-        // @ts-ignore
+        {/*@ts-expect-error -- explain why this is safe */ }
         editorRef.current.setValue(formatted)
       }
     } catch (error) {
@@ -126,14 +126,14 @@ const RealtimeMessageEditor = () => {
     const emptyMessage = '{\n  \n}'
     setDraftMessage(emptyMessage)
     if (editorRef.current) {
-      // @ts-ignore
+      {/*@ts-expect-error -- explain why this is safe */ }
       editorRef.current.setValue(emptyMessage)
-      // @ts-ignore
+      {/*@ts-expect-error -- explain why this is safe */ }
       editorRef.current.focus()
     }
   }, [setDraftMessage])
 
-  
+
 
   return (
     <div className="flex flex-col space-y-4 bg-zinc-800 rounded-lg p-4">
@@ -141,15 +141,14 @@ const RealtimeMessageEditor = () => {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">Message Editor</h3>
         <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-1 rounded ${
-            status === 'connected' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-          }`}>
+          <span className={`text-xs px-2 py-1 rounded ${status === 'connected' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+            }`}>
             {status === 'connected' ? 'Connected' : 'Disconnected'}
           </span>
         </div>
       </div>
 
-    
+
       {/* Editor */}
       <div className="relative">
         <div className="border border-zinc-700 rounded-lg overflow-hidden">
@@ -185,7 +184,7 @@ const RealtimeMessageEditor = () => {
             }
           />
         </div>
-        
+
         {/* Editor Actions */}
         <div className="absolute top-2 right-2 flex gap-1 opacity-70 hover:opacity-100 transition-opacity">
           <Button
@@ -230,7 +229,7 @@ const RealtimeMessageEditor = () => {
         </Button>
       </div>
 
-            <RealtimeClientServerLogsTable />
+      <RealtimeClientServerLogsTable />
     </div>
   )
 }
