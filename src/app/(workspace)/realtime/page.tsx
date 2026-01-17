@@ -3,6 +3,8 @@ import RealtimeConnectionBar from '@/modules/realtime/components/realtime-connec
 import RealtimeMessageEditor from '@/modules/realtime/components/realtime-message-editor'
 
 import React from 'react'
+export const dynamic = "force-dynamic";
+
 
 const page = () => {
 return (
