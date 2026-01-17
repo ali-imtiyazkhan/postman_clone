@@ -1,7 +1,6 @@
 "use server";
 
 import db from "@/lib/db";
-import { env } from "@/lib/env";
 import { currentUser } from "@/modules/authentication/actions";
 import { MEMBER_ROLE } from "@prisma/client";
 import { randomBytes } from "crypto";

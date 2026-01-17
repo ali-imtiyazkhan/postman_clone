@@ -1,7 +1,6 @@
 "use client";
 
 import Modal from "@/components/ui/modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Folder, Plus, Search, X } from "lucide-react";
 import React, { useState, useEffect, act } from "react";
 import { toast } from "sonner";

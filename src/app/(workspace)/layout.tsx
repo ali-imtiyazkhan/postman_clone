@@ -1,4 +1,3 @@
-import { SidebarProvider } from '@/components/ui/sidebar'
 import { currentUser } from '@/modules/authentication/actions'
 import Header from '@/modules/Layout/components/header'
 import { initializeWorkspace } from '@/modules/workspace/actions'

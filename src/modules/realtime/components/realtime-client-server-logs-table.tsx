@@ -89,7 +89,7 @@ const RealtimeClientServerLogsTable = () => {
     }).format(timestamp)
   }
 
-  const formatMessageData = (data: any) => {
+  const formatMessageData = (data:string) => {
     if (typeof data === 'string') {
       try {
         return JSON.stringify(JSON.parse(data), null, 2)

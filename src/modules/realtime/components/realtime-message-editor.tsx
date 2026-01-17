@@ -43,13 +43,11 @@ const RealtimeMessageEditor = () => {
     try {
       setIsSending(true)
 
-      // Try to parse JSON to validate
       let messageToSend
       try {
         messageToSend = JSON.parse(draftMessage)
 
       } catch (e) {
-        // If not valid JSON, send as string
         messageToSend = draftMessage
       }
 
