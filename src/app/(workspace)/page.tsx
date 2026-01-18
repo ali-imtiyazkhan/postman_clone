@@ -12,8 +12,7 @@ import { useGetWorkspace } from "@/modules/workspace/hooks/workspace";
 import { Loader } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight-new";
 
-
-const Page = () => {
+export default function HomeClient() {
   const { selectedWorkspace } = useWorkspaceStore();
   const { data: currentWorkspace, isLoading } =
     useGetWorkspace(selectedWorkspace?.id!);
@@ -34,7 +33,6 @@ const Page = () => {
         gradientSecond="radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 80%, transparent 100%)"
         gradientThird="radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 80%, transparent 100%)"
       />
-
 
       <div className="relative z-10 h-full">
         <ResizablePanelGroup direction="horizontal">
@@ -58,6 +56,4 @@ const Page = () => {
       </div>
     </div>
   );
-};
-
-export default Page;
+}
