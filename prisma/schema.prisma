@@ -217,7 +217,7 @@ model RequestRun {
 model Environment {
   id     String @id @default(cuid())
   name   String
-  values Json // e.g. { "BASE_URL": "https://api.example.com", "AUTH": "Bearer xxx" }
+  values Json
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
