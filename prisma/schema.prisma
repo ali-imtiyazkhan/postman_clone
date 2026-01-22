@@ -184,8 +184,8 @@ model Request {
   parameters Json?
   headers    Json? // e.g. 
 
-  body     Json? // request body (JSON / text)
-  response Json? // optional: save last response
+  body     Json?
+  response Json? 
 
   collectionId String
   collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
