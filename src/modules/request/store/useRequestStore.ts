@@ -47,12 +47,12 @@ type PlaygroundState = {
 };
 
 export const useRequestPlaygroundStore = create<PlaygroundState>((set) => ({
-  /* ---------------- RESPONSE VIEWER ---------------- */
+
   responseViewerData: null,
   setResponseViewerData: (data) =>
     set({ responseViewerData: data }),
 
-  /* ---------------- TABS ---------------- */
+
   tabs: [
     {
       id: nanoid(),

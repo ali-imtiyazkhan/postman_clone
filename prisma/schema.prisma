@@ -152,9 +152,6 @@ model WorkspaceMember {
   @@unique([userId, workspaceId])
 }
 
-//
-// ─── COLLECTIONS & REQUESTS ──────────────────────────────────────────────
-//
 
 model Collection {
   id   String @id @default(cuid())
@@ -182,7 +179,7 @@ model Request {
   method     REST_METHOD @default(GET)
   url        String
   parameters Json?
-  headers    Json? // e.g. 
+  headers    Json?
 
   body     Json?
   response Json? 
