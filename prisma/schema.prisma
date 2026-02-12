@@ -152,7 +152,6 @@ model WorkspaceMember {
   @@unique([userId, workspaceId])
 }
 
-
 model Collection {
   id   String @id @default(cuid())
   name String
@@ -182,7 +181,7 @@ model Request {
   headers    Json?
 
   body     Json?
-  response Json? 
+  response Json?
 
   collectionId String
   collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)

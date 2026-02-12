@@ -10,19 +10,19 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 const LoginPage = () => {
   return (
     <section className="relative min-h-screen overflow-hidden bg-black text-white px-4 py-16 md:py-32">
-    
+
       <BackgroundBeams />
 
-      <div className="relative z-10 m-auto w-full max-w-sm">
-        <div className="bg-card/80 backdrop-blur-xl rounded-[calc(var(--radius)+.125rem)] border border-white/10 shadow-xl">
+      <div className="relative z-10 m-auto w-full max-w-sm ">
+        <div className=" backdrop-blur-xl bg-zinc-800 rounded-[calc(var(--radius)+.125rem)] border border-white/10 shadow-xl">
           <div className="p-8 pb-6">
             <div>
               <Link href="/">
-                <h1 className="text-2xl font-bold">Postman</h1>
+                <h1 className="text-2xl font-bold">PostBoy</h1>
               </Link>
 
-              <h1 className="mb-1 mt-4 text-xl font-semibold">
-                Sign in to Postman
+              <h1 className="mb-1 mt-4 text-xl font-semibold text-white">
+                Sign in to PostBoy
               </h1>
 
               <p className="text-sm text-neutral-400">
@@ -30,7 +30,6 @@ const LoginPage = () => {
               </p>
             </div>
 
-            {/* GitHub */}
             <div className="mt-6 grid gap-3">
               <Button
                 variant="outline"

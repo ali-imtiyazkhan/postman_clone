@@ -43,7 +43,12 @@ type PlaygroundState = {
   ) => void;
 
   responseViewerData: ResponseData | null;
-  setResponseViewerData: (data: ResponseData) => void;
+  setResponseViewerData: (data: ResponseData | null) => void;
+
+  responseAuditData: any | null;
+  setResponseAuditData: (data: any | null) => void;
+  isAuditing: boolean;
+  setIsAuditing: (value: boolean) => void;
 };
 
 export const useRequestPlaygroundStore = create<PlaygroundState>((set) => ({
@@ -51,6 +56,13 @@ export const useRequestPlaygroundStore = create<PlaygroundState>((set) => ({
   responseViewerData: null,
   setResponseViewerData: (data) =>
     set({ responseViewerData: data }),
+
+  responseAuditData: null,
+  setResponseAuditData: (data) =>
+    set({ responseAuditData: data }),
+  isAuditing: false,
+  setIsAuditing: (value) =>
+    set({ isAuditing: value }),
 
 
   tabs: [
@@ -143,16 +155,16 @@ export const useRequestPlaygroundStore = create<PlaygroundState>((set) => ({
       tabs: state.tabs.map((t) =>
         t.id === tabId
           ? {
-              ...t,
-              id: savedRequest.id,
-              title: savedRequest.name,
-              method: savedRequest.method,
-              url: savedRequest.url,
-              body: savedRequest.body,
-              headers: savedRequest.headers,
-              parameters: savedRequest.parameters,
-              unsavedChanges: false,
-            }
+            ...t,
+            id: savedRequest.id,
+            title: savedRequest.name,
+            method: savedRequest.method,
+            url: savedRequest.url,
+            body: savedRequest.body,
+            headers: savedRequest.headers,
+            parameters: savedRequest.parameters,
+            unsavedChanges: false,
+          }
           : t
       ),
       activeTabId: savedRequest.id,
