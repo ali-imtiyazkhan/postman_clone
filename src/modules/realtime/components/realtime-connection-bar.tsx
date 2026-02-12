@@ -5,17 +5,17 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useWsStore } from '../hooks/useWs'
 
 const RealtimeConnectionBar = () => {
-  const { 
-    status, 
-    isConnected, 
-    error, 
-    url: connectedUrl, 
-    reconnectAttempts, 
+  const {
+    status,
+    isConnected,
+    error,
+    url: connectedUrl,
+    reconnectAttempts,
     maxReconnectAttempts,
     connect,
     disconnect
   } = useWsStore()
-  
+
   const [url, setUrl] = useState(connectedUrl || '')
 
   // keep local input in sync with connectedUrl
@@ -114,8 +114,8 @@ const RealtimeConnectionBar = () => {
   return (
     <div className='flex flex-row items-center justify-between bg-zinc-900 rounded-md px-2 py-2 w-full'>
       <div className="flex flex-row items-center gap-2 flex-1">
-        <Input 
-          value={url} 
+        <Input
+          value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={handleKeyPress}
           placeholder="Enter WebSocket URL (e.g., ws://localhost:8080)"
@@ -123,17 +123,16 @@ const RealtimeConnectionBar = () => {
           disabled={status === 'connecting' || status === 'reconnecting'}
         />
       </div>
-      
+
       <div className="flex items-center gap-2 ">
         {/* Connection Status Indicator */}
         <div className="flex px-2 flex-col items-end text-xs text-zinc-400">
           <div className="flex items-center gap-1">
-            <div 
-              className={`w-2 h-2 rounded-full ${
-                status === 'connected' ? 'bg-green-500' :
-                status === 'connecting' || status === 'reconnecting' ? 'bg-yellow-500 animate-pulse' :
-                status === 'error' ? 'bg-red-500' : 'bg-zinc-500'
-              }`}
+            <div
+              className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-green-500' :
+                  status === 'connecting' || status === 'reconnecting' ? 'bg-yellow-500 animate-pulse' :
+                    status === 'error' ? 'bg-red-500' : 'bg-zinc-500'
+                }`}
             />
             <span className="capitalize">{getStatusText()}</span>
           </div>
@@ -148,7 +147,7 @@ const RealtimeConnectionBar = () => {
             </div>
           )}
         </div>
-        
+
         <Button
           type='button'
           onClick={onConnect}
