@@ -16,8 +16,15 @@ import {
   Code,
   FileText,
   Settings,
+  ShieldCheck,
+  Activity,
+  Zap,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
   TestTube,
 } from "lucide-react";
+import { useRequestPlaygroundStore } from "../store/useRequestStore";
 
 type HeadersMap = Record<string, string>;
 
@@ -25,11 +32,11 @@ interface RequestRun {
   id: string;
   requestId?: string;
   status?: number;
-  statusText?: string;
-  headers?: HeadersMap;
+  statusText?: string | null;
+  headers?: any;
   body?: string | object | null;
-  durationMs?: number;
-  createdAt?: string;
+  durationMs?: number | null;
+  createdAt?: string | Date;
 }
 
 interface Result {
@@ -50,6 +57,7 @@ interface Props {
 }
 
 const ResponseViewer = ({ responseData }: Props) => {
+  const { responseAuditData, isAuditing } = useRequestPlaygroundStore();
   const [activeTab, setActiveTab] = useState("json");
 
   const getStatusColor = (status?: number): string => {
@@ -98,9 +106,9 @@ const ResponseViewer = ({ responseData }: Props) => {
 
   const status: number | undefined =
     responseData.result?.status ?? responseData.requestRun?.status;
-  const statusText: string | undefined =
+  const statusText: string | null | undefined =
     responseData.result?.statusText ?? responseData.requestRun?.statusText;
-  const duration: number | undefined =
+  const duration: number | null | undefined =
     responseData.result?.duration ?? responseData.requestRun?.durationMs;
   const size: number | undefined = responseData.result?.size;
   const rawBody = responseData.requestRun?.body;
@@ -207,6 +215,19 @@ const ResponseViewer = ({ responseData }: Props) => {
                           .length
                       }
                     </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="ai-audit"
+                    className="bg-transparent data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-gray-400 rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-pink-500 px-4 py-2"
+                  >
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    AI Judge
+                    {isAuditing && <Loader2 className="w-3 h-3 ml-2 animate-spin" />}
+                    {!isAuditing && responseAuditData && (
+                      <Badge variant="secondary" className="ml-2 text-[10px] h-4 bg-pink-500/20 text-pink-400 border-pink-500/30">
+                        {responseAuditData.overallScore}
+                      </Badge>
+                    )}
                   </TabsTrigger>
                   <TabsTrigger
                     value="test"
@@ -322,7 +343,7 @@ const ResponseViewer = ({ responseData }: Props) => {
                               {key}
                             </div>
                             <div className="text-gray-300 text-sm break-all">
-                              {value}
+                              {String(value)}
                             </div>
                           </div>
                           <Button
@@ -336,6 +357,104 @@ const ResponseViewer = ({ responseData }: Props) => {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="ai-audit" className="mt-0">
+                <ScrollArea className="h-96">
+                  <div className="p-6 space-y-6">
+                    {/* Summary Section */}
+                    {isAuditing ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Loader2 className="w-12 h-12 text-pink-500 animate-spin mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">AI is Auditing your Response</h3>
+                        <p className="text-gray-400 max-w-md">Gemini is currently analyzing your API response for security risks, performance issues, and best practices...</p>
+                      </div>
+                    ) : !responseAuditData ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <ShieldCheck className="w-12 h-12 text-gray-600 mb-4" />
+                        <h3 className="text-xl font-semibold text-white mb-2">No Audit Data Yet</h3>
+                        <p className="text-gray-400 max-w-md">Run a request to trigger the AI Judge audit. The results will appear here automatically.</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-xl border border-zinc-700">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-full ${responseAuditData.overallScore >= 80 ? 'bg-green-500/10 text-green-400' : responseAuditData.overallScore >= 50 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`}>
+                              <Activity className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-400">Security & Quality Score</div>
+                              <div className="text-2xl font-bold">{responseAuditData.overallScore}/100</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={responseAuditData.overallScore >= 80 ? 'outline' : 'destructive'} className={responseAuditData.overallScore >= 80 ? 'border-green-500 text-green-400' : ''}>
+                              {responseAuditData.overallScore >= 80 ? 'Secure' : responseAuditData.overallScore >= 50 ? 'Warning' : 'Critical'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Audit Summary</h3>
+                          <p className="text-gray-200 leading-relaxed bg-zinc-800/30 p-4 rounded-lg border border-zinc-800">
+                            {responseAuditData.summary}
+                          </p>
+                        </div>
+
+                        {responseAuditData.vulnerabilities.length > 0 && (
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Key Vulnerabilities</h3>
+                            <div className="space-y-3">
+                              {responseAuditData.vulnerabilities.map((v: any, i: number) => (
+                                <div key={i} className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <AlertTriangle className={`w-4 h-4 ${v.severity === 'Critical' || v.severity === 'High' ? 'text-red-500' : 'text-yellow-500'}`} />
+                                      <span className="font-semibold text-white">{v.type}</span>
+                                    </div>
+                                    <Badge className={v.severity === 'Critical' ? 'bg-red-500' : v.severity === 'High' ? 'bg-orange-500' : 'bg-yellow-600'}>
+                                      {v.severity}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-gray-300 mb-3">{v.description}</p>
+                                  <div className="bg-zinc-800/50 p-3 rounded text-sm border-l-2 border-blue-500">
+                                    <span className="text-blue-400 font-medium">Recommendation: </span>
+                                    <span className="text-gray-300">{v.recommendation}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Best Practices</h3>
+                            <ul className="space-y-2">
+                              {responseAuditData.bestPractices.map((item: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Performance</h3>
+                            <ul className="space-y-2">
+                              {responseAuditData.performance.map((item: string, i: number) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                                  <Zap className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>

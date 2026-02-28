@@ -6,7 +6,7 @@ const model = google('gemini-2.0-flash');
 
 export interface RequestSuggestionParams {
   workspaceName: string;
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' ;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   url?: string;
   description?: string;
 }
@@ -49,6 +49,29 @@ const StructuredJsonBodySchema = z.object({
   suggestions: z.array(z.string()).describe('Alternative field suggestions or improvements')
 });
 
+const ResponseAuditSchema = z.object({
+  vulnerabilities: z.array(z.object({
+    type: z.string().describe('Type of vulnerability (e.g., Security, Performance, Logic)'),
+    severity: z.enum(['Low', 'Medium', 'High', 'Critical']).describe('Severity level'),
+    description: z.string().describe('Detailed description of the issue'),
+    recommendation: z.string().describe('Step-by-step recommendation to fix')
+  })).describe('List of potential vulnerabilities found'),
+  bestPractices: z.array(z.string()).describe('List of general best practice improvements'),
+  performance: z.array(z.string()).describe('Potential performance bottlenecks'),
+  overallScore: z.number().min(0).max(100).describe('Overall security and quality score'),
+  summary: z.string().describe('A concise summary of the audit findings')
+});
+
+export interface ResponseAuditParams {
+  method: string;
+  url: string;
+  requestHeaders?: string;
+  requestBody?: string;
+  responseStatus: number;
+  responseHeaders?: string;
+  responseBody: string;
+}
+
 /**
  * Agent 1: Suggest Request Names
  * Generates meaningful request names based on workspace context and HTTP method
@@ -83,7 +106,7 @@ Consider the workspace theme and make names that would make sense to other devel
       model,
       schema: RequestNameSchema,
       prompt,
-      temperature: 0.7, 
+      temperature: 0.7,
     });
 
     return {
@@ -140,7 +163,7 @@ IMPORTANT: Return the jsonBody as a valid JSON string that can be parsed with JS
       model,
       schema: JsonBodySchema,
       prompt: systemPrompt,
-      temperature: 0.3, 
+      temperature: 0.3,
     });
 
     // Parse the JSON string back to an object for easier handling
@@ -294,7 +317,7 @@ export function validateGeneratedJson(jsonBody: Record<string, any>): {
   try {
     // Basic validation
     JSON.stringify(jsonBody);
-    
+
     // Check for empty objects
     if (Object.keys(jsonBody).length === 0) {
       errors.push('Generated JSON is empty');
@@ -308,10 +331,10 @@ export function validateGeneratedJson(jsonBody: Record<string, any>): {
 
     // Check for meaningful property names
     const keys = Object.keys(jsonBody);
-    const hasGenericKeys = keys.some(key => 
+    const hasGenericKeys = keys.some(key =>
       ['data', 'value', 'item', 'field'].includes(key.toLowerCase())
     );
-    
+
     if (hasGenericKeys) {
       suggestions.push('Consider using more specific property names');
     }
@@ -347,11 +370,68 @@ export async function batchSuggestRequestNames(
 
   return results.map((result, index) => ({
     originalRequest: requests[index],
-    suggestions: result.status === 'fulfilled' && result.value.success 
-      ? result.value.data 
+    suggestions: result.status === 'fulfilled' && result.value.success
+      ? result.value.data
       : null,
-    error: result.status === 'fulfilled' 
-      ? result.value.error 
+    error: result.status === 'fulfilled'
+      ? result.value.error
       : result.reason?.message || 'Unknown error'
   }));
+}
+
+/**
+ * Agent 3: Response Auditor / AI Judge
+ * Analyzes API responses for security, performance, and best practices.
+ */
+export async function auditResponse({
+  method,
+  url,
+  requestHeaders,
+  requestBody,
+  responseStatus,
+  responseHeaders,
+  responseBody
+}: ResponseAuditParams) {
+  try {
+    const prompt = `
+You are an expert Security Engineer and API Auditor. Your task is to analyze the following API transaction and identify potential security vulnerabilities, performance issues, and best practice violations.
+
+API Transaction:
+- Method: ${method}
+- URL: ${url}
+- Request Headers: ${requestHeaders || 'None'}
+- Request Body: ${requestBody || 'None'}
+- Response Status: ${responseStatus}
+- Response Headers: ${responseHeaders || 'None'}
+- Response Body: ${responseBody}
+
+Specific areas to check:
+1. Security: Look for sensitive data exposure (e.g., plain-text passwords, tokens, PII), SQL injection patterns, insecure headers, and lack of hashing.
+2. Logic/Bugs: Inconsistent data, missing fields, or incorrect status codes.
+3. Performance: Large response bodies, slow response patterns (if time provided), or inefficient data structures.
+4. Input Validation: Check if the request parameters/body suggest risks of injection or improper validation.
+
+Provide a comprehensive audit report.
+`;
+
+    const result = await generateObject({
+      model,
+      schema: ResponseAuditSchema,
+      prompt,
+      temperature: 0.2,
+    });
+
+    return {
+      success: true,
+      data: result.object,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error auditing response:', error);
+    return {
+      success: false,
+      data: null,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
 }
