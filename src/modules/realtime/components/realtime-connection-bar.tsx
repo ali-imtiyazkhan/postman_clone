@@ -3,6 +3,8 @@ import { Input } from '@/components/ui/input'
 import { PlugZap, Plug, AlertCircle } from 'lucide-react'
 import React, { useState, useCallback, useEffect } from 'react'
 import { useWsStore } from '../hooks/useWs'
+import { toast } from 'sonner'
+import { Copy, Check } from 'lucide-react'
 
 const RealtimeConnectionBar = () => {
   const {
@@ -17,15 +19,31 @@ const RealtimeConnectionBar = () => {
   } = useWsStore()
 
   const [url, setUrl] = useState(connectedUrl || '')
+  const [copied, setCopied] = useState(false)
 
   // keep local input in sync with connectedUrl
   useEffect(() => {
     setUrl(connectedUrl || '')
   }, [connectedUrl])
 
+  const copyUrl = useCallback(() => {
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    toast.success('URL copied to clipboard')
+    setTimeout(() => setCopied(false), 2000)
+  }, [url])
+
   const onConnect = useCallback(() => {
-    if (!url.trim()) {
-      alert('Please enter a WebSocket URL')
+    const trimmedUrl = url.trim()
+    if (!trimmedUrl) {
+      toast.error('Please enter a WebSocket URL')
+      return
+    }
+
+    // Basic WebSocket URL validation
+    if (!trimmedUrl.startsWith('ws://') && !trimmedUrl.startsWith('wss://')) {
+      toast.error('WebSocket URL must start with ws:// or wss://')
       return
     }
 
@@ -130,15 +148,22 @@ const RealtimeConnectionBar = () => {
           <div className="flex items-center gap-1">
             <div
               className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-green-500' :
-                  status === 'connecting' || status === 'reconnecting' ? 'bg-yellow-500 animate-pulse' :
-                    status === 'error' ? 'bg-red-500' : 'bg-zinc-500'
+                status === 'connecting' || status === 'reconnecting' ? 'bg-yellow-500 animate-pulse' :
+                  status === 'error' ? 'bg-red-500' : 'bg-zinc-500'
                 }`}
             />
             <span className="capitalize">{getStatusText()}</span>
           </div>
           {connectedUrl && (
-            <div className="text-[10px] text-zinc-500 max-w-32 truncate">
-              {connectedUrl}
+            <div className="flex items-center gap-1 text-[10px] text-zinc-500 max-w-32">
+              <span className="truncate">{connectedUrl}</span>
+              <button
+                onClick={copyUrl}
+                className="hover:text-white transition-colors"
+                title="Copy URL"
+              >
+                {copied ? <Check size={10} /> : <Copy size={10} />}
+              </button>
             </div>
           )}
           {error && (

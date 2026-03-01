@@ -4,6 +4,27 @@ import { z } from 'zod';
 
 const model = google('gemini-2.0-flash');
 
+/**
+ * Enhanced error handler for AI calls to provide better user feedback
+ */
+function handleAiError(error: any): string {
+  console.error('AI Agent Error:', error);
+
+  if (error?.statusCode === 429 || error?.message?.includes('quota')) {
+    return 'Gemini API limit reached. Please wait a few seconds or check your quota at ai.google.dev.';
+  }
+
+  if (error?.statusCode === 404 || error?.message?.includes('not found')) {
+    return 'The selected AI model is currently unavailable or unsupported for this API key.';
+  }
+
+  if (error?.message?.includes('API key')) {
+    return 'Invalid or missing API key. Please check your .env file.';
+  }
+
+  return error instanceof Error ? error.message : 'An unexpected error occurred during AI analysis.';
+}
+
 export interface RequestSuggestionParams {
   workspaceName: string;
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -93,13 +114,14 @@ Context:
 - Description: ${description || 'Not provided'}
 
 Generate 3 concise, descriptive request names that:
-1. Reflect the HTTP method and purpose
-2. Are relevant to the workspace context
-3. Follow common REST API naming conventions
-4. Are professional and clear
-5. Are between 2-6 words long
+1. Reflect the HTTP method and purpose accurately.
+2. Are highly relevant to the workspace context ("${workspaceName}").
+3. Follow modern REST API naming conventions (e.g., camelCase or kebab-case as appropriate).
+4. Are professional, clear, and easy for other developers to understand.
+5. Are between 2-6 words long.
+6. Avoid generic terms like "Request1" or "Test API".
 
-Consider the workspace theme and make names that would make sense to other developers.
+Consider the workspace theme and the specific URL/Description provided to create names that feel like part of a well-organized API collection.
 `;
 
     const result = await generateObject({
@@ -115,11 +137,10 @@ Consider the workspace theme and make names that would make sense to other devel
       error: null
     };
   } catch (error) {
-    console.error('Error generating request name suggestions:', error);
     return {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: handleAiError(error)
     };
   }
 }
@@ -144,15 +165,15 @@ Context:
 - Additional Context: ${context || 'None'}
 
 Guidelines:
-1. Generate realistic, well-structured JSON based on the user's request
-2. Use appropriate data types (strings, numbers, booleans, arrays, objects)
-3. Include reasonable example values that make sense for the context
-4. Follow common JSON and REST API conventions
-5. Consider the HTTP method when structuring the data
-6. Make the JSON practical and ready-to-use
-7. Include nested objects and arrays when appropriate
-8. Use meaningful field names
-9. Return the JSON as a properly formatted JSON string
+1. Generate realistic, production-ready, well-structured JSON based on the user's request.
+2. Use appropriate and varied data types (strings, numbers, booleans, arrays, objects).
+3. Include reasonable, high-quality example values that make sense for a real-world application.
+4. Follow common JSON and REST API conventions (proper nesting, camelCase keys).
+5. Consider the HTTP method and endpoint when structuring the data (e.g., POST usually requires more fields than PATCH).
+6. Ensure the JSON is practical, valid, and ready-to-use in an API client.
+7. Include nested objects and arrays when they add value to the data structure.
+8. Use descriptive and meaningful field names (avoid "field1", "data2").
+9. Handle edge cases mentioned in the prompt (e.g., "include empty array if no users").
 
 User Request: ${prompt}
 
@@ -184,11 +205,10 @@ IMPORTANT: Return the jsonBody as a valid JSON string that can be parsed with JS
       error: null
     };
   } catch (error) {
-    console.error('Error generating JSON body:', error);
     return {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: handleAiError(error)
     };
   }
 }
@@ -249,11 +269,10 @@ IMPORTANT: Return the jsonBody as a valid JSON string that can be parsed with JS
       error: null
     };
   } catch (error) {
-    console.error('Error generating smart JSON body:', error);
     return {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: handleAiError(error)
     };
   }
 }
@@ -294,11 +313,10 @@ User Request: ${prompt}
       error: null
     };
   } catch (error) {
-    console.error('Error generating structured JSON body:', error);
     return {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: handleAiError(error)
     };
   }
 }
@@ -406,12 +424,26 @@ API Transaction:
 - Response Body: ${responseBody}
 
 Specific areas to check:
-1. Security: Look for sensitive data exposure (e.g., plain-text passwords, tokens, PII), SQL injection patterns, insecure headers, and lack of hashing.
-2. Logic/Bugs: Inconsistent data, missing fields, or incorrect status codes.
-3. Performance: Large response bodies, slow response patterns (if time provided), or inefficient data structures.
-4. Input Validation: Check if the request parameters/body suggest risks of injection or improper validation.
+1. **Security**: 
+   - Sensitive data exposure (PII, plain-text passwords, secrets, tokens).
+   - SQL/NoSQL injection patterns in request or response.
+   - Missing or insecure security headers (e.g., XSS Protection, Content-Security-Policy, HSTS).
+   - Cross-Origin Resource Sharing (CORS) misconfigurations.
+2. **Logic & Data Integrity**:
+   - Inconsistent data types or structures.
+   - Missing required fields according to common REST patterns.
+   - Improper use of HTTP status codes (e.g., 200 OK for an error).
+3. **Performance**:
+   - Oversized response bodies (potential for pagination).
+   - Missing compression (gzip/br).
+   - Inefficient data structures (e.g., deeply nested objects where flat would work).
+   - Lack of caching headers (Cache-Control, ETag).
+4. **API Design/Best Practices**:
+   - Following RESTful naming and structure.
+   - Proper versioning in URL or headers.
+   - Consistent error response formats.
 
-Provide a comprehensive audit report.
+Provide a comprehensive, professional audit report that helps developers build more secure and efficient APIs.
 `;
 
     const result = await generateObject({
@@ -427,11 +459,70 @@ Provide a comprehensive audit report.
       error: null
     };
   } catch (error) {
-    console.error('Error auditing response:', error);
     return {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: handleAiError(error)
+    };
+  }
+}
+
+/**
+ * Agent 4: WebSocket Message Analyzer
+ * Analyzes individual WebSocket messages for patterns, security, and data structure.
+ */
+export async function analyzeWsMessage({
+  type,
+  data,
+  url
+}: {
+  type: 'sent' | 'received';
+  data: string;
+  url: string;
+}) {
+  try {
+    const prompt = `
+You are an expert in Real-time Communications and WebSocket security. Analyze this single WebSocket message.
+
+Context:
+- URL: ${url}
+- Direction: ${type === 'sent' ? 'Client -> Server (Sent)' : 'Server -> Client (Received)'}
+- Message Data: ${data}
+
+Your task:
+1. **Identify the format**: Is it JSON, Binary, Plaintext, or a specific protocol (like Socket.io or GraphQL subscriptions)?
+2. **Structure Analysis**: Describe the data structure and its likely purpose.
+3. **Security Check**: Are there any sensitive fields or security risks in this message?
+4. **Improvement Suggestions**: Suggest how this message could be optimized or made more secure.
+
+Provide a concise but insightful analysis.
+`;
+
+    const WsAnalysisSchema = z.object({
+      format: z.string().describe('Message format (e.g., JSON, YAML, Text)'),
+      purpose: z.string().describe('Likely purpose of this message'),
+      securityRisks: z.array(z.string()).describe('Potential security risks found'),
+      insights: z.array(z.string()).describe('Key insights or optimization suggestions'),
+      summary: z.string().describe('Brief summary of the analysis')
+    });
+
+    const result = await generateObject({
+      model,
+      schema: WsAnalysisSchema,
+      prompt,
+      temperature: 0.3,
+    });
+
+    return {
+      success: true,
+      data: result.object,
+      error: null
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error: handleAiError(error)
     };
   }
 }
