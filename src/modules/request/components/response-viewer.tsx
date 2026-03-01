@@ -25,6 +25,7 @@ import {
   TestTube,
 } from "lucide-react";
 import { useRequestPlaygroundStore } from "../store/useRequestStore";
+import { useAuditResponse } from "../hooks/request";
 
 type HeadersMap = Record<string, string>;
 
@@ -57,8 +58,11 @@ interface Props {
 }
 
 const ResponseViewer = ({ responseData }: Props) => {
-  const { responseAuditData, isAuditing } = useRequestPlaygroundStore();
-  const [activeTab, setActiveTab] = useState("json");
+  const { tabs, activeTabId, responseAuditData, isAuditing } = useRequestPlaygroundStore();
+  const { mutate: auditResponse } = useAuditResponse();
+  const [activeViewTab, setActiveViewTab] = useState("json");
+
+  const activeTab = tabs.find(t => t.id === activeTabId);
 
   const getStatusColor = (status?: number): string => {
     const s = typeof status === "number" ? status : 0;
@@ -112,6 +116,20 @@ const ResponseViewer = ({ responseData }: Props) => {
     responseData.result?.duration ?? responseData.requestRun?.durationMs;
   const size: number | undefined = responseData.result?.size;
   const rawBody = responseData.requestRun?.body;
+
+  const handleManualAudit = () => {
+    if (!responseData.requestRun || !activeTab) return;
+
+    auditResponse({
+      method: activeTab.method,
+      url: activeTab.url,
+      requestHeaders: activeTab.headers || "{}",
+      requestBody: activeTab.body || "",
+      responseStatus: status || 0,
+      responseHeaders: JSON.stringify(responseData.requestRun.headers),
+      responseBody: String(rawBody || ""),
+    });
+  };
 
   return (
     <div className="w-full bg-zinc-950 text-white p-6">
@@ -180,8 +198,8 @@ const ResponseViewer = ({ responseData }: Props) => {
           </CardHeader>
           <CardContent className="p-0">
             <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
+              value={activeViewTab}
+              onValueChange={setActiveViewTab}
               className="w-full"
             >
               <div className="px-6 border-b border-zinc-800">
@@ -375,7 +393,14 @@ const ResponseViewer = ({ responseData }: Props) => {
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <ShieldCheck className="w-12 h-12 text-gray-600 mb-4" />
                         <h3 className="text-xl font-semibold text-white mb-2">No Audit Data Yet</h3>
-                        <p className="text-gray-400 max-w-md">Run a request to trigger the AI Judge audit. The results will appear here automatically.</p>
+                        <p className="text-gray-400 max-w-md mb-6">Run a request and click the button below to trigger the AI Judge audit.</p>
+                        <Button
+                          onClick={handleManualAudit}
+                          className="bg-pink-600 hover:bg-pink-700 text-white"
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Audit with AI
+                        </Button>
                       </div>
                     ) : (
                       <>

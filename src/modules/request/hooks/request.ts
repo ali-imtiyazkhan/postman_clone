@@ -8,6 +8,7 @@ import {
   saveRequest,
   auditRequestAction,
 } from "../actions";
+import { ResponseAuditParams } from "@/lib/ai-agents";
 import { useRequestPlaygroundStore } from "../store/useRequestStore";
 
 export function useAddRequestToCollection(collectionId: string) {
@@ -64,29 +65,29 @@ export function useRunRequest() {
     onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["requests"] });
       setResponseViewerData(data);
+      // Removed automatic AI audit to conserve quota
+    },
+  });
+}
 
-      if (data.success && data.requestRun) {
-        useRequestPlaygroundStore.getState().setIsAuditing(true);
-        try {
-          const auditResult = await auditRequestAction({
-            method: variables.method,
-            url: variables.url,
-            requestHeaders: JSON.stringify(variables.headers),
-            requestBody: variables.body,
-            responseStatus: data.requestRun.status,
-            responseHeaders: JSON.stringify(data.requestRun.headers),
-            responseBody: data.requestRun.body || "",
-          });
-
-          if (auditResult.success) {
-            useRequestPlaygroundStore.getState().setResponseAuditData(auditResult.data);
-          }
-        } catch (error) {
-          console.error("AI Audit failed:", error);
-        } finally {
-          useRequestPlaygroundStore.getState().setIsAuditing(false);
-        }
+export function useAuditResponse() {
+  return useMutation({
+    mutationFn: async (params: ResponseAuditParams) =>
+      await auditRequestAction(params),
+    onMutate: () => {
+      useRequestPlaygroundStore.getState().setIsAuditing(true);
+      useRequestPlaygroundStore.getState().setResponseAuditData(null);
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        useRequestPlaygroundStore.getState().setResponseAuditData(data.data);
       }
+    },
+    onError: (error) => {
+      console.error("AI Audit failed:", error);
+    },
+    onSettled: () => {
+      useRequestPlaygroundStore.getState().setIsAuditing(false);
     },
   });
 }

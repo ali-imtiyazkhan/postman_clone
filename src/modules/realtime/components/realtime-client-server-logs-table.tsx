@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useWsStore } from '../hooks/useWs'
-import { ChevronUp, ChevronDown, Trash2, Copy, Clock, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { ChevronUp, ChevronDown, Trash2, Copy, Clock, ArrowUpRight, ArrowDownLeft, Brain, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { analyzeWsMessage } from '@/lib/ai-agents'
+import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
 
 const RealtimeClientServerLogsTable = () => {
   const { messages, clearMessages } = useWsStore()
   const [selectedMessageIndex, setSelectedMessageIndex] = useState<number>(-1)
+  const [analyzingIndex, setAnalyzingIndex] = useState<number>(-1)
+  const [analysisResults, setAnalysisResults] = useState<Record<number, any>>({})
   const tableRef = useRef<HTMLDivElement>(null)
   const rowRefs = useRef<(HTMLDivElement | null)[]>([])
+  const { url } = useWsStore()
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -32,7 +38,7 @@ const RealtimeClientServerLogsTable = () => {
     if (row && tableRef.current) {
       const containerRect = tableRef.current.getBoundingClientRect()
       const rowRect = row.getBoundingClientRect()
-      
+
       if (rowRect.top < containerRect.top || rowRect.bottom > containerRect.bottom) {
         row.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
@@ -41,26 +47,26 @@ const RealtimeClientServerLogsTable = () => {
 
   const handleNavigateUp = () => {
     if (messages.length === 0) return
-    
-    const newIndex = selectedMessageIndex === -1 
-      ? messages.length - 1 
+
+    const newIndex = selectedMessageIndex === -1
+      ? messages.length - 1
       : Math.max(0, selectedMessageIndex - 1)
-    
+
     setSelectedMessageIndex(newIndex)
     scrollToRow(newIndex)
   }
 
   const handleNavigateDown = () => {
     if (messages.length === 0) return
-    
-    const newIndex = selectedMessageIndex === -1 
-      ? 0 
-      : selectedMessageIndex + 1 < messages.length 
-        ? selectedMessageIndex + 1 
+
+    const newIndex = selectedMessageIndex === -1
+      ? 0
+      : selectedMessageIndex + 1 < messages.length
+        ? selectedMessageIndex + 1
         : -1
 
     setSelectedMessageIndex(newIndex)
-    
+
     if (newIndex === -1) {
       scrollToBottom()
     } else {
@@ -89,7 +95,7 @@ const RealtimeClientServerLogsTable = () => {
     }).format(timestamp)
   }
 
-  const formatMessageData = (data:string) => {
+  const formatMessageData = (data: string) => {
     if (typeof data === 'string') {
       try {
         return JSON.stringify(JSON.parse(data), null, 2)
@@ -101,12 +107,36 @@ const RealtimeClientServerLogsTable = () => {
   }
 
   const getMessageTypeIcon = (type: 'sent' | 'received') => {
-    return type === 'sent' 
+    return type === 'sent'
       ? <ArrowUpRight size={16} className="text-blue-400" />
       : <ArrowDownLeft size={16} className="text-green-400" />
   }
 
- 
+  const handleAnalyze = async (index: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const message = messages[index]
+    if (!message || !url) return
+
+    setAnalyzingIndex(index)
+    try {
+      const result = await analyzeWsMessage({
+        type: message.type,
+        data: typeof message.data === 'string' ? message.data : JSON.stringify(message.data),
+        url: url
+      })
+
+      if (result.success) {
+        setAnalysisResults(prev => ({ ...prev, [index]: result.data }))
+        toast.success('Analysis complete!')
+      } else {
+        toast.error('AI Analysis failed')
+      }
+    } catch (error) {
+      toast.error('An error occurred during analysis')
+    } finally {
+      setAnalyzingIndex(-1)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 rounded-md">
@@ -117,7 +147,7 @@ const RealtimeClientServerLogsTable = () => {
           <h3 className="text-white font-medium">Message Logs</h3>
           <span className="text-xs text-zinc-500">({messages.length} messages)</span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Navigation arrows */}
           <Button
@@ -130,7 +160,7 @@ const RealtimeClientServerLogsTable = () => {
           >
             <ChevronUp size={16} />
           </Button>
-          
+
           <Button
             variant="ghost"
             size="sm"
@@ -173,8 +203,8 @@ const RealtimeClientServerLogsTable = () => {
                 className={`
                   border-l-4 rounded-r-md p-3 cursor-pointer transition-all duration-200
                
-                  ${selectedMessageIndex === index 
-                    ? 'ring-2 ring-zinc-400 bg-zinc-800/50' 
+                  ${selectedMessageIndex === index
+                    ? 'ring-2 ring-zinc-400 bg-zinc-800/50'
                     : 'hover:bg-zinc-800/30'
                   }
                 `}
@@ -183,20 +213,33 @@ const RealtimeClientServerLogsTable = () => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {getMessageTypeIcon(message.type)}
-                    <span className={`text-sm font-medium capitalize ${
-                      message.type === 'sent' ? 'text-blue-300' : 'text-green-300'
-                    }`}>
+                    <span className={`text-sm font-medium capitalize ${message.type === 'sent' ? 'text-blue-300' : 'text-green-300'
+                      }`}>
                       {message.type}
                     </span>
                     <span className="text-xs text-zinc-500">
                       #{index + 1}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-zinc-400">
                       {formatTimestamp(message.timestamp)}
                     </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleAnalyze(index, e)}
+                      disabled={analyzingIndex === index}
+                      className={`h-6 w-6 p-0 ${analysisResults[index] ? 'text-pink-400' : 'text-zinc-400 hover:text-pink-400'}`}
+                      title="AI Explain Message"
+                    >
+                      {analyzingIndex === index ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <Brain size={12} />
+                      )}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -220,8 +263,8 @@ const RealtimeClientServerLogsTable = () => {
                       </pre>
                     ) : (
                       <div className="truncate">
-                        {typeof message.data === 'string' 
-                          ? message.data 
+                        {typeof message.data === 'string'
+                          ? message.data
                           : JSON.stringify(message.data)
                         }
                       </div>
@@ -236,6 +279,47 @@ const RealtimeClientServerLogsTable = () => {
                       <pre className="whitespace-pre-wrap wrap-break-word">
                         {message.raw}
                       </pre>
+                    </div>
+                  </div>
+                )}
+
+                {selectedMessageIndex === index && analysisResults[index] && (
+                  <div className="mt-3 p-4 bg-pink-500/5 rounded-lg border border-pink-500/20 text-xs text-zinc-300">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Brain size={14} className="text-pink-400" />
+                      <span className="font-semibold text-pink-400">AI Analysis</span>
+                      <Badge variant="outline" className="border-pink-500/30 text-[10px] text-pink-300">
+                        {analysisResults[index].format}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3">
+                      <div className="text-zinc-500 mb-1 font-medium">Purpose:</div>
+                      <div>{analysisResults[index].purpose}</div>
+                    </div>
+
+                    {analysisResults[index].securityRisks.length > 0 && (
+                      <div className="mb-3">
+                        <div className="text-red-400/80 mb-1 font-medium">Security Risks:</div>
+                        <ul className="list-disc list-inside space-y-1">
+                          {analysisResults[index].securityRisks.map((risk: string, i: number) => (
+                            <li key={i}>{risk}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="mb-3">
+                      <div className="text-blue-400/80 mb-1 font-medium">Insights & Optimization:</div>
+                      <ul className="list-disc list-inside space-y-1">
+                        {analysisResults[index].insights.map((insight: string, i: number) => (
+                          <li key={i}>{insight}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="pt-2 border-t border-pink-500/10 italic text-zinc-400">
+                      {analysisResults[index].summary}
                     </div>
                   </div>
                 )}
